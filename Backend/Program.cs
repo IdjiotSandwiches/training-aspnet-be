@@ -27,7 +27,13 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conf
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<CrudHelper>();
+var helperTypes = typeof(CrudHelper).Assembly.GetTypes()
+    .Where(t => t.Namespace == "Backend.Helpers" && t.IsClass);
+
+foreach (var type in helperTypes)
+{
+    builder.Services.AddScoped(type);
+}
 
 var app = builder.Build();
 
