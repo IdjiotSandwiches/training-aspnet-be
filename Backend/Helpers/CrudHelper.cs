@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Backend.Data;
-using Backend.Dtos;
 using Backend.Models;
+using Backend.Dtos;
 using AutoMapper;
 
 namespace Backend.Helpers
@@ -11,25 +11,41 @@ namespace Backend.Helpers
         private readonly AppDbContext _dbContext = dbContext;
         private readonly IMapper _mapper = mapper;
 
-        public async Task<IEnumerable<STNK>> GetAllStnk()
+        public async Task<InitDto> Init()
         {
-            return await _dbContext.STNKs.ToListAsync();
+            var carType = await _dbContext.CarType.ToListAsync();
+            var engineSize = await _dbContext.EngineSize.ToListAsync();
+
+            var init = new InitDto
+            {
+                CarType = _mapper.Map<List<CarType>>(carType),
+                EngineSize = _mapper.Map<List<EngineSize>>(engineSize)
+            };
+
+            return init;
         }
 
-        public async Task<STNK> GetStnkByStnkNumber(string stnkNumber)
+        public async Task<IEnumerable<STNK>> GetAllStnk()
         {
-            var stnk = await _dbContext.STNKs
-                .Join(_dbContext.Owners,
+            return await _dbContext.STNK.ToListAsync();
+        }
+
+        public async Task<object?> GetStnkByStnkNumber(string stnkNumber)
+        {
+            var stnk = await _dbContext.STNK
+                .Join(_dbContext.Owner,
                     stnk => stnk.OwnerId,
                     owner => owner.Id,
                     (stnk, owner) => new
                     {
                         stnk, owner
                     })
-                .Where(x => x.stnk.StnkNumber == stnkNumber)
+                .Where(x => x.stnk.RegistrationNumber == stnkNumber)
                 .FirstOrDefaultAsync();
 
-            return _mapper.Map<STNK>(stnk);
+            if (stnk == null) return null;
+
+            return stnk;
         }
     }
 }

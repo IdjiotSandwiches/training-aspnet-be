@@ -5,7 +5,7 @@ namespace Backend.Dtos
     public class AllStnkDto
     {
         [Required]
-        public required string StnkNumber { get; set; }
+        public required string RegistrationNumber { get; set; }
 
         [Required]
         public required string CarName { get; set; }

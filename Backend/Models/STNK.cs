@@ -9,7 +9,7 @@ namespace Backend.Models
         public int Id { get; set; }
 
         [Required]
-        public required string StnkNumber { get; set; }
+        public required string RegistrationNumber { get; set; }
 
         [Required]
         public int OwnerId { get; set; }
@@ -36,6 +36,6 @@ namespace Backend.Models
         public required string AddedBy { get; set; }
 
         public DateOnly ModifiedDate { get; set; }
-        public string ModifiedBy { get; set; } = string.Empty;
+        public required string ModifiedBy { get; set; }
     }
 }

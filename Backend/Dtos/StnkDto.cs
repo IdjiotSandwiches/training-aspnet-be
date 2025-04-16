@@ -2,10 +2,10 @@
 
 namespace Backend.Dtos
 {
-    public class STNKDto
+    public class StnkDto
     {
         [Required]
-        public required string StnkNumber { get; set; }
+        public required string RegistrationNumber { get; set; }
 
         [Required]
         public required string OwnerName { get; set; }

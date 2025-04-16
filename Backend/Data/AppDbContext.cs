@@ -11,9 +11,9 @@ namespace Backend.Data
             
         }
 
-        public DbSet<STNK> STNKs { get; set; }
-        public DbSet<Owner> Owners { get; set; }
-        public DbSet<EngineSize> EngineSizes { get; set; }
-        public DbSet<CarType> CarTypes { get; set; }
+        public DbSet<STNK> STNK { get; set; }
+        public DbSet<Owner> Owner { get; set; }
+        public DbSet<EngineSize> EngineSize { get; set; }
+        public DbSet<CarType> CarType { get; set; }
     }
 }

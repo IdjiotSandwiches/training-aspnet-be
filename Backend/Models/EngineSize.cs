@@ -12,9 +12,9 @@ namespace Backend.Models
         public required string Name { get; set; }
 
         [Required]
-        public int size { get; set; }
+        public int Size { get; set; }
 
         [Required]
-        public int percentage { get; set; }
+        public int Percentage { get; set; }
     }
 }
