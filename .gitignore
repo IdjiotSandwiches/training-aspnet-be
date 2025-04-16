@@ -58,3 +58,4 @@ nunit-*.xml
 
 # API
 Backend/appsettings.json
+Backend/appsettings.Development.json
