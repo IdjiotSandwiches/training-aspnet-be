@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Backend.Models;
+using Microsoft.Identity.Client;
 
 namespace Backend.Data
 {
@@ -11,6 +12,8 @@ namespace Backend.Data
         }
 
         public DbSet<STNK> STNKs { get; set; }
-        //public DbSet<>
+        public DbSet<Owner> Owners { get; set; }
+        public DbSet<EngineSize> EngineSizes { get; set; }
+        public DbSet<CarType> CarTypes { get; set; }
     }
 }
