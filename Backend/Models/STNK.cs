@@ -36,6 +36,6 @@ namespace Backend.Models
         public required string AddedBy { get; set; }
 
         public DateOnly ModifiedDate { get; set; }
-        public required string ModifiedBy { get; set; }
+        public string ModifiedBy { get; set; } = string.Empty;
     }
 }

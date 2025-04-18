@@ -19,12 +19,17 @@ namespace Backend.Controllers
         {
             var init = await _crudHelper.Init();
 
-            if (init == null) return StatusCode(500);
+            if (init == null) return StatusCode(StatusCodes.Status500InternalServerError);
 
-            return _mapper.Map<InitDto>(init);
+            return Ok(new ApiResponseDto<object>
+            {
+                Status = StatusCodes.Status200OK,
+                Message = "OK",
+                Data = _mapper.Map<InitDto>(init)
+            });
         }
 
-        [HttpGet("all")]
+        [HttpGet("all-stnk")]
         public async Task<ActionResult<AllStnkDto>> GetAllStnk()
         {
             var stnk = await _crudHelper.GetAllStnk();
@@ -32,14 +37,14 @@ namespace Backend.Controllers
             if (!stnk.Any())
                 return NotFound(new ApiResponseDto<AllStnkDto>
                 {
-                    Status = 404,
+                    Status = StatusCodes.Status404NotFound,
                     Message = "Data Empty!",
                     Data = null
                 });
 
             return Ok(new ApiResponseDto<IEnumerable<AllStnkDto>>
             {
-                Status = 200,
+                Status = StatusCodes.Status200OK,
                 Message = "OK",
                 Data = _mapper.Map<IEnumerable<AllStnkDto>>(stnk)
             });
@@ -54,16 +59,43 @@ namespace Backend.Controllers
 
             if (stnk == null) return NotFound(new ApiResponseDto<StnkDto>
             {
-                Status = 404,
+                Status = StatusCodes.Status404NotFound,
                 Message = "STNK not found!",
                 Data = null
             });
 
             return Ok(new ApiResponseDto<StnkDto>
             {
-                Status = 200,
+                Status = StatusCodes.Status200OK,
                 Message = "OK",
                 Data = _mapper.Map<StnkDto>(stnk)
+            });
+        }
+        
+        [HttpPost("insert")]
+        public async Task<ActionResult<ApiResponseDto<object>>> CreateStnk([FromBody] StnkDto stnk)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            try
+            {
+                await _crudHelper.InsertStnk(stnk);
+            }
+            catch (Exception ex)
+            {
+                return Conflict(new ApiResponseDto<object>
+                {
+                    Status = StatusCodes.Status409Conflict,
+                    Message = ex.Message,
+                    Data = null
+                });
+            }
+
+            return Ok(new ApiResponseDto<object>
+            {
+                Status = StatusCodes.Status200OK,
+                Message = "OK",
+                Data = null,
             });
         }
     }

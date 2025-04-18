@@ -11,6 +11,9 @@ namespace Backend.Dtos
         public required string OwnerName { get; set; }
 
         [Required]
+        public required string OwnerNIK { get; set; }
+
+        [Required]
         public int CarType { get; set; }
 
         [Required]
