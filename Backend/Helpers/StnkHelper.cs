@@ -26,9 +26,9 @@ namespace Backend.Helpers
             return init;
         }
 
-        public async Task<IEnumerable<STNK>> GetAllStnk()
+        public async Task<IEnumerable<AllStnkDto>> GetAllStnk()
         {
-            return await _dbContext.STNK.ToListAsync();
+            return _mapper.Map<IEnumerable<AllStnkDto>>(await _dbContext.STNK.ToListAsync());
         }
 
         public async Task<object?> GetStnkByStnkNumber(string stnkNumber)
@@ -107,7 +107,7 @@ namespace Backend.Helpers
             await _dbContext.SaveChangesAsync();
             await transaction.CommitAsync();
 
-            return $"{sequenceType.Pattern} {sequence.CurrentSequence}";
+            return $"{sequenceType.Pattern}{sequence.CurrentSequence}";
         }
     }
 }

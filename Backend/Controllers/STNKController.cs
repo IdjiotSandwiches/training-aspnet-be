@@ -44,13 +44,13 @@ namespace Backend.Controllers
         [HttpGet("all-stnk")]
         public async Task<ActionResult<ApiResponseDto<AllStnkDto>>> GetAllStnk()
         {
-            var stnk = await _stnkHelper.GetAllStnk();
+            var stnkList = await _stnkHelper.GetAllStnk();
 
             return Ok(new ApiResponseDto<IEnumerable<AllStnkDto>>
             {
                 Status = StatusCodes.Status200OK,
                 Message = "OK",
-                Data = _mapper.Map<IEnumerable<AllStnkDto>>(stnk)
+                Data = stnkList
             });
         }
 

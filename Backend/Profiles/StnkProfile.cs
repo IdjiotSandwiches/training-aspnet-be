@@ -11,6 +11,7 @@ namespace Backend.Profiles
             CreateMap<STNK, StnkInsertReadDto>();
             CreateMap<STNK, StnkUpdateReadDto>();
             CreateMap<StnkWriteDto, STNK>();
+            CreateMap<STNK, AllStnkDto>();
         }
     }
 }
