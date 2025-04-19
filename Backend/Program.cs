@@ -27,7 +27,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conf
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-var helperTypes = typeof(CrudHelper).Assembly.GetTypes()
+var helperTypes = typeof(StnkHelper).Assembly.GetTypes()
     .Where(t => t.Namespace == "Backend.Helpers" && t.IsClass);
 
 foreach (var type in helperTypes)

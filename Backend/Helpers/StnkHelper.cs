@@ -4,24 +4,23 @@ using Backend.Models;
 using Backend.Dtos;
 using Backend.Enums;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Helpers
 {
-    public class CrudHelper(AppDbContext dbContext, IMapper mapper)
+    public class StnkHelper(AppDbContext dbContext, IMapper mapper)
     {
         private readonly AppDbContext _dbContext = dbContext;
         private readonly IMapper _mapper = mapper;
 
         public async Task<InitDto> Init()
         {
-            var carType = await _dbContext.CarType.ToListAsync();
-            var engineSize = await _dbContext.EngineSize.ToListAsync();
+            if (!await _dbContext.CarType.AnyAsync() || !await _dbContext.EngineSize.AnyAsync()) 
+                throw new Exception("Initialize failed!");
 
             var init = new InitDto
             {
-                CarType = _mapper.Map<List<CarType>>(carType),
-                EngineSize = _mapper.Map<List<EngineSize>>(engineSize)
+                CarType = await _dbContext.CarType.ToListAsync(),
+                EngineSize = await _dbContext.EngineSize.ToListAsync()
             };
 
             return init;
@@ -50,37 +49,33 @@ namespace Backend.Helpers
             return stnk;
         }
 
-        public async Task InsertStnk(StnkDto stnk)
+        public async Task InsertStnk(StnkInsertReadDto stnk)
         {
-            var x = await _dbContext.STNK
-                .Where(x => x.RegistrationNumber == stnk.RegistrationNumber)
-                .FirstOrDefaultAsync() ?? throw new Exception("Registration number has been registered!");
-
-            x = new STNK
+            var x = _mapper.Map<STNK>(new StnkWriteDto
             {
-                RegistrationNumber = await GetSequence(SequenceTypeEnum.STNK) ?? throw new Exception("Sequence error!"),
-                OwnerId = await CreateOwner(stnk.OwnerNIK, stnk.OwnerName),
+                RegistrationNumber = await GetSequence(SequenceTypeEnum.STNK) ?? throw new Exception("STNK Sequence error!"),
+                OwnerId = await CreateOwner(stnk.OwnerName),
                 CarName = stnk.CarName,
                 CarType = stnk.CarType,
                 CarPrice = stnk.CarPrice,
                 LastTaxPrice = stnk.LastTaxPrice,
                 AddedBy = "",
                 AddedDate = DateOnly.FromDateTime(DateTime.Now)
-            };
+            });
 
             _dbContext.Add(x);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<int> CreateOwner(string nik, string name)
+        public async Task<int> CreateOwner(string name)
         {
             var owner = await _dbContext.Owner
-                .Where(x => x.NIK == nik)
+                .Where(x => x.Name == name)
                 .FirstOrDefaultAsync();
 
             if (owner != null) return owner.Id;
 
-            var sequence = await GetSequence(SequenceTypeEnum.NIK) ?? throw new Exception("Sequence error!");
+            var sequence = await GetSequence(SequenceTypeEnum.NIK) ?? throw new Exception("NIK Sequence error!");
 
             owner = new Owner { Name = name, NIK = sequence };
             _dbContext.Owner.Add(owner);
@@ -89,22 +84,30 @@ namespace Backend.Helpers
             return owner.Id;
         }
 
-        public async Task<string?> GetSequence(SequenceTypeEnum type)
+        public async Task<string> GetSequence(SequenceTypeEnum type)
         {
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
             var sequenceType = await _dbContext.SequenceType
                 .Where(x => x.Id == (int)type)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync() ?? throw new Exception("Invalid operation!");
 
             var sequence = await _dbContext.Sequence
                 .Where(x => x.TypeId == (int)type)
                 .FirstOrDefaultAsync();
+            
+            if (sequence == null)
+            {
+                sequence = new Sequence { TypeId = sequenceType.Id, CurrentSequence = 1 };
+                _dbContext.Add(sequence);
+            }
+            else
+                sequence.CurrentSequence++;
 
-            if (sequence == null) return null;
-
-            sequence.CurrentSequence = sequence.CurrentSequence + 1;
             await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
 
-            return $"{sequenceType?.Pattern} {sequence.CurrentSequence}";
+            return $"{sequenceType.Pattern} {sequence.CurrentSequence}";
         }
     }
 }

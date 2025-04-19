@@ -2,16 +2,10 @@
 
 namespace Backend.Dtos
 {
-    public class StnkDto
+    public class StnkInsertReadDto
     {
         [Required]
-        public required string RegistrationNumber { get; set; }
-
-        [Required]
         public required string OwnerName { get; set; }
-
-        [Required]
-        public required string OwnerNIK { get; set; }
 
         [Required]
         public int CarType { get; set; }
