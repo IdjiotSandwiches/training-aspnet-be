@@ -8,10 +8,10 @@ namespace Backend.Profiles
     {
         public StnkProfile()
         {
-            CreateMap<STNK, StnkInsertReadDto>();
-            CreateMap<STNK, StnkUpdateReadDto>();
-            CreateMap<StnkWriteDto, STNK>();
-            CreateMap<STNK, AllStnkDto>();
+            CreateMap<Stnk, StnkInsertReadDto>();
+            CreateMap<Stnk, StnkUpdateReadDto>();
+            CreateMap<StnkWriteDto, Stnk>();
+            CreateMap<Stnk, AllStnkDto>();
         }
     }
 }

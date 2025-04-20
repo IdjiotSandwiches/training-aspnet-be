@@ -1,18 +1,17 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Backend.Helpers;
 using Backend.Dtos;
+using Backend.Services;
 
 namespace Backend.Controllers
 {
     [EnableCors]
     [ApiController]
     [Route("api/[controller]")]
-    public class STNKController(StnkHelper stnkHelper, IMapper mapper) : Controller
+    public class STNKController(StnkService stnkService) : Controller
     {
-        private readonly IMapper _mapper = mapper;
-        private readonly StnkHelper _stnkHelper = stnkHelper;
+        private readonly StnkService _stnkService = stnkService;
 
         [HttpGet("init")]
         public async Task<ActionResult<ApiResponseDto<InitDto>>> Init()
@@ -21,7 +20,7 @@ namespace Backend.Controllers
 
             try
             {
-                init = await _stnkHelper.Init();
+                init = await _stnkService.Init();
             }
             catch (Exception ex)
             {
@@ -42,9 +41,9 @@ namespace Backend.Controllers
         }
 
         [HttpGet("all-stnk")]
-        public async Task<ActionResult<ApiResponseDto<AllStnkDto>>> GetAllStnk()
+        public async Task<ActionResult<ApiResponseDto<IEnumerable<AllStnkDto>>>> GetAllStnk()
         {
-            var stnkList = await _stnkHelper.GetAllStnk();
+            var stnkList = await _stnkService.GetAllStnk();
 
             return Ok(new ApiResponseDto<IEnumerable<AllStnkDto>>
             {
@@ -59,7 +58,7 @@ namespace Backend.Controllers
         {
             if (stnkNumber == null) return BadRequest(new ApiResponseDto<StnkUpdateReadDto>());
 
-            var stnk = await _stnkHelper.GetStnkByStnkNumber(stnkNumber);
+            var stnk = await _stnkService.GetStnkByStnkNumber(stnkNumber);
 
             if (stnk == null) return NotFound(new ApiResponseDto<StnkUpdateReadDto>
             {

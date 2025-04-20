@@ -2,7 +2,7 @@
 
 namespace Backend.Models
 {
-    public class STNK
+    public class Stnk
     {
         [Key]
         [Required]
