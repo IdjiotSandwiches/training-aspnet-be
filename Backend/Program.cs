@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
-using Backend.Helpers;
+using Backend.Services.Interfaces;
+using Backend.Services;
+using Backend.Repositories.Interfaces;
+using Backend.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,13 +30,14 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(conf
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-var helperTypes = typeof(StnkHelper).Assembly.GetTypes()
-    .Where(t => t.Namespace == "Backend.Helpers" && t.IsClass);
 
-foreach (var type in helperTypes)
-{
-    builder.Services.AddScoped(type);
-}
+// Repositories
+builder.Services.AddScoped<IStnkRepository, StnkRepository>();
+builder.Services.AddScoped<ISequenceRepository, SequenceRepository>();
+
+// Services
+builder.Services.AddScoped<IStnkService, StnkService>();
+builder.Services.AddScoped<ISequenceService, SequenceService>();
 
 var app = builder.Build();
 

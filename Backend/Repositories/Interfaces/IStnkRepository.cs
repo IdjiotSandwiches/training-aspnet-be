@@ -1,4 +1,5 @@
-﻿using Backend.Models;
+﻿using Backend.Dtos;
+using Backend.Models;
 
 namespace Backend.Repositories.Interfaces
 {
@@ -8,11 +9,13 @@ namespace Backend.Repositories.Interfaces
         Task<IEnumerable<EngineSize>> GetEngineSizeAsync();
         Task<bool> IsCarTypeEmptyAsync();
         Task<bool> IsEngineSizeEmptyAsync();
-        Task<IEnumerable<Stnk>> GetAllStnkAsync();
-        Task<Stnk> GetStnkByRegistrationNumberAsync(string registrationNumber);
-        Task<Stnk> InsertStnkAsync(Stnk stnk);
+        Task<bool> IsStnkEmptyAsync(string registrationNumber);
         Task<bool> IsOwnerEmptyAsync(string name);
-        Task<Owner> InsertOwnerAsync(string name);
+        Task<IEnumerable<Stnk>> GetAllStnkAsync();
+        Task<StnkUpdateReadDto> GetStnkByRegistrationNumberAsync(string registrationNumber);
+        void InsertStnk(Stnk stnk);
+        int InsertOwner(string name, string sequence);
         Task<int> GetOwnerIdAsync(string name);
+        Task SaveChangesAsync();
     }
 }

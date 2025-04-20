@@ -1,4 +1,5 @@
 ﻿using Backend.Data;
+using Backend.Dtos;
 using Backend.Models;
 using Backend.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -32,34 +33,67 @@ namespace Backend.Repositories
                 .SingleOrDefaultAsync();
         }
 
-        public Task<Stnk> GetStnkByRegistrationNumberAsync(string registrationNumber)
+        public async Task<StnkUpdateReadDto> GetStnkByRegistrationNumberAsync(string registrationNumber)
         {
-            throw new NotImplementedException();
+            return await _dbContext.Stnk
+                .Join(_dbContext.Owner,
+                    stnk => stnk.OwnerId,
+                    owner => owner.Id,
+                    (stnk, owner) => new
+                    {
+                        stnk,
+                        owner
+                    })
+                .Where(x => x.stnk.RegistrationNumber == registrationNumber)
+                .Select(x => new StnkUpdateReadDto
+                {
+                    RegistrationNumber = x.stnk.RegistrationNumber,
+                    CarName = x.stnk.CarName,
+                    CarType = x.stnk.CarType,
+                    EngineSize = x.stnk.EngineSize,
+                    CarPrice = x.stnk.CarPrice,
+                    LastTaxPrice = x.stnk.LastTaxPrice,
+                    OwnerName = x.owner.Name,
+                    OwnerNIK = x.owner.NIK
+                })
+                .SingleAsync();
         }
 
-        public Task<Owner> InsertOwnerAsync(string name)
+        public int InsertOwner(string name, string sequence)
         {
-            throw new NotImplementedException();
+            var owner = new Owner { Name = name, NIK = sequence };
+            _dbContext.Owner.Add(owner);
+            return owner.Id;
         }
 
-        public Task<Stnk> InsertStnkAsync(Stnk stnk)
+        public void InsertStnk(Stnk stnk)
         {
-            throw new NotImplementedException();
+            _dbContext.Add(stnk);
         }
 
         public async Task<bool> IsCarTypeEmptyAsync()
         {
-            return await _dbContext.CarType.AnyAsync();
+            return !await _dbContext.CarType.AnyAsync();
         }
 
         public async Task<bool> IsEngineSizeEmptyAsync()
         {
-            return await _dbContext.EngineSize.AnyAsync();
+            return !await _dbContext.EngineSize.AnyAsync();
         }
 
         public async Task<bool> IsOwnerEmptyAsync(string name)
         {
-            return await _dbContext.Owner.AnyAsync(x => x.Name == name);
+            return !await _dbContext.Owner.AnyAsync(x => x.Name == name);
+        }
+
+        public async Task<bool> IsStnkEmptyAsync(string registrationNumber)
+        {
+            return !await _dbContext.Stnk.AnyAsync(x => x.RegistrationNumber == registrationNumber);
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

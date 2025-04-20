@@ -3,40 +3,34 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Dtos;
 using Backend.Services;
+using Backend.Services.Interfaces;
 
 namespace Backend.Controllers
 {
     [EnableCors]
     [ApiController]
     [Route("api/[controller]")]
-    public class STNKController(StnkService stnkService) : Controller
+    public class STNKController(IStnkService stnkService) : Controller
     {
-        private readonly StnkService _stnkService = stnkService;
+        private readonly IStnkService _stnkService = stnkService;
 
         [HttpGet("init")]
         public async Task<ActionResult<ApiResponseDto<InitDto>>> Init()
         {
-            InitDto init;
-
-            try
-            {
-                init = await _stnkService.Init();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponseDto<object>
+            var init = await _stnkService.Init();
+            if (!init.IsSuccess)
+                return StatusCode(init.Status, new ApiResponseDto<InitDto>
                 {
-                    Status = StatusCodes.Status500InternalServerError,
-                    Message = ex.Message,
-                    Data = null,
+                    Status = init.Status,
+                    Message = init.Message,
+                    Data = null
                 });
-            }
 
-            return Ok(new ApiResponseDto<object>
+            return Ok(new ApiResponseDto<InitDto>
             {
-                Status = StatusCodes.Status200OK,
-                Message = "OK",
-                Data = init
+                Status = init.Status,
+                Message = init.Message,
+                Data = init.Data
             });
         }
 
@@ -44,60 +38,73 @@ namespace Backend.Controllers
         public async Task<ActionResult<ApiResponseDto<IEnumerable<AllStnkDto>>>> GetAllStnk()
         {
             var stnkList = await _stnkService.GetAllStnk();
+            if (!stnkList.IsSuccess)
+                return StatusCode(stnkList.Status, new ApiResponseDto<IEnumerable<AllStnkDto>>
+                {
+                    Status = stnkList.Status,
+                    Message = stnkList.Message,
+                    Data = null
+                });
 
             return Ok(new ApiResponseDto<IEnumerable<AllStnkDto>>
             {
-                Status = StatusCodes.Status200OK,
-                Message = "OK",
-                Data = stnkList
+                Status = stnkList.Status,
+                Message = stnkList.Message,
+                Data = stnkList.Data
             });
         }
 
-        [HttpGet("{stnkNumber}")]
-        public async Task<ActionResult<ApiResponseDto<StnkUpdateReadDto>>> GetStnkByStnkNumber(string stnkNumber)
+        [HttpGet("{registrationNumber}")]
+        public async Task<ActionResult<ApiResponseDto<StnkUpdateReadDto>>> GetStnkByStnkNumber(string registrationNumber)
         {
-            if (stnkNumber == null) return BadRequest(new ApiResponseDto<StnkUpdateReadDto>());
-
-            var stnk = await _stnkService.GetStnkByStnkNumber(stnkNumber);
-
-            if (stnk == null) return NotFound(new ApiResponseDto<StnkUpdateReadDto>
+            if (registrationNumber == null) return BadRequest(new ApiResponseDto<StnkUpdateReadDto>
             {
-                Status = StatusCodes.Status404NotFound,
-                Message = "STNK not found!",
+                Status = StatusCodes.Status400BadRequest,
+                Message = "Registration number cannot be null!",
                 Data = null
             });
 
+            var stnk = await _stnkService.GetStnkByRegistrationNumber(registrationNumber);
+
+            if (!stnk.IsSuccess)
+                return StatusCode(stnk.Status, new ApiResponseDto<StnkUpdateReadDto>
+                {
+                    Status = stnk.Status,
+                    Message = stnk.Message,
+                    Data = null
+                });
+
             return Ok(new ApiResponseDto<StnkUpdateReadDto>
             {
-                Status = StatusCodes.Status200OK,
-                Message = "OK",
-                Data = _mapper.Map<StnkUpdateReadDto>(stnk)
+                Status = stnk.Status,
+                Message = stnk.Message,
+                Data = stnk.Data
             });
         }
         
         [HttpPost("insert")]
         public async Task<ActionResult<ApiResponseDto<object>>> CreateStnk([FromBody] StnkInsertReadDto stnk)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            if (!ModelState.IsValid) return BadRequest(new ApiResponseDto<object>
+            {
+                Status = StatusCodes.Status400BadRequest,
+                Message = "Form cannot be empty!",
+                Data = null
+            });
 
-            try
-            {
-                await _stnkHelper.InsertStnk(stnk);
-            }
-            catch (Exception ex)
-            {
-                return Conflict(new ApiResponseDto<object>
+            var newStnk = await _stnkService.InsertStnk(stnk);
+            if (!newStnk.IsSuccess) 
+                return StatusCode(newStnk.Status, new ApiResponseDto<object>
                 {
-                    Status = StatusCodes.Status409Conflict,
-                    Message = ex.Message,
+                    Status = newStnk.Status,
+                    Message = newStnk.Message,
                     Data = null
                 });
-            }
 
             return Ok(new ApiResponseDto<object>
             {
-                Status = StatusCodes.Status200OK,
-                Message = "OK",
+                Status = newStnk.Status,
+                Message = newStnk.Message,
                 Data = null,
             });
         }

@@ -5,7 +5,7 @@ namespace Backend.Dtos
 {
     public class InitDto
     {
-        public required List<CarType> CarType { get; set; }
-        public required List<EngineSize> EngineSize { get; set; }
+        public IEnumerable<CarType> CarType { get; set; } = new List<CarType>();
+        public IEnumerable<EngineSize> EngineSize { get; set; } = new List<EngineSize>();
     }
 }
