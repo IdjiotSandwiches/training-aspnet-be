@@ -4,7 +4,6 @@ using Backend.Services.Interfaces;
 using Backend.Services;
 using Backend.Repositories.Interfaces;
 using Backend.Repositories;
-using Backend.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
