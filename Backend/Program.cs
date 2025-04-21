@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Data;
+using Backend.Services.Interfaces;
+using Backend.Services;
+using Backend.Repositories.Interfaces;
+using Backend.Repositories;
 using Backend.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,9 +28,17 @@ builder.Services.AddCors(options =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("STNK_Database")));
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<CrudHelper>();
+
+// Repositories
+builder.Services.AddScoped<IStnkRepository, StnkRepository>();
+builder.Services.AddScoped<ISequenceRepository, SequenceRepository>();
+
+// Services
+builder.Services.AddScoped<IStnkService, StnkService>();
+builder.Services.AddScoped<ISequenceService, SequenceService>();
 
 var app = builder.Build();
 

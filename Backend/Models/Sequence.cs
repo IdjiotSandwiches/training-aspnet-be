@@ -2,16 +2,15 @@
 
 namespace Backend.Models
 {
-    public class CarType
+    public class Sequence
     {
         [Key]
-        [Required]
         public int Id { get; set; }
 
         [Required]
-        public required string Name { get; set; }
+        public int TypeId { get; set; }
 
         [Required]
-        public int Percentage { get; set; }
+        public long CurrentSequence { get; set; }
     }
 }
