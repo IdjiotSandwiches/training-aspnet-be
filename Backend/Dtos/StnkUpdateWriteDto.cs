@@ -2,13 +2,21 @@
 
 namespace Backend.Dtos
 {
-    public class StnkInsertReadDto
+    public class StnkUpdateWriteDto
     {
-        public string OwnerName { get; set; } = string.Empty;
+        [Required]
         public int CarType { get; set; }
-        public string CarName { get; set; } = string.Empty;
+
+        [Required]
+        public required string CarName { get; set; }
+
+        [Required]
         public int EngineSize { get; set; }
+
+        [Required]
         public decimal CarPrice { get; set; }
+
+        [Required]
         public decimal LastTaxPrice { get; set; }
     }
 }

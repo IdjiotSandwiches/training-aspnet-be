@@ -2,10 +2,10 @@
 
 namespace Backend.Dtos
 {
-    public class StnkWriteDto
+    public class StnkInsertWriteDto
     {
         [Required]
-        public required string RegistrationNumber { get; set; }
+        public string RegistrationNumber { get; set; } = string.Empty;
 
         [Required]
         public int OwnerId { get; set; }
@@ -14,7 +14,7 @@ namespace Backend.Dtos
         public int CarType { get; set; }
 
         [Required]
-        public required string CarName { get; set; }
+        public string CarName { get; set; } = string.Empty;
 
         [Required]
         public int EngineSize { get; set; }
@@ -29,9 +29,6 @@ namespace Backend.Dtos
         public DateOnly AddedDate { get; set; }
 
         [Required]
-        public required string AddedBy { get; set; }
-
-        public DateOnly ModifiedDate { get; set; }
-        public string ModifiedBy { get; set; } = string.Empty;
+        public string AddedBy { get; set; } = string.Empty;
     }
 }

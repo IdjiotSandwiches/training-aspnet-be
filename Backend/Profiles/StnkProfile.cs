@@ -10,8 +10,10 @@ namespace Backend.Profiles
         {
             CreateMap<Stnk, StnkInsertReadDto>();
             CreateMap<Stnk, StnkUpdateReadDto>();
-            CreateMap<StnkWriteDto, Stnk>();
+            CreateMap<StnkInsertWriteDto, Stnk>();
             CreateMap<Stnk, AllStnkDto>();
+            CreateMap<StnkUpdateWriteDto, Stnk>();
+            CreateMap<StnkInsertReadDto, StnkInsertWriteDto>();
         }
     }
 }

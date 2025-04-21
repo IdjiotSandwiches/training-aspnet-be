@@ -4,6 +4,7 @@ using Backend.Services.Interfaces;
 using Backend.Services;
 using Backend.Repositories.Interfaces;
 using Backend.Repositories;
+using Backend.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +39,9 @@ builder.Services.AddScoped<ISequenceRepository, SequenceRepository>();
 // Services
 builder.Services.AddScoped<IStnkService, StnkService>();
 builder.Services.AddScoped<ISequenceService, SequenceService>();
+
+// Helpers
+builder.Services.AddScoped<StnkHelper>();
 
 var app = builder.Build();
 

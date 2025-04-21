@@ -1,14 +1,19 @@
-﻿using Backend.Data;
+﻿using AutoMapper;
+using Backend.Common;
+using Backend.Data;
 using Backend.Dtos;
+using Backend.Helpers;
 using Backend.Models;
 using Backend.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories
 {
-    public class StnkRepository(AppDbContext dbContext) : IStnkRepository
+    public class StnkRepository(AppDbContext dbContext, IMapper mapper, StnkHelper helper) : IStnkRepository
     {
         private readonly AppDbContext _dbContext = dbContext;
+        private readonly IMapper _mapper = mapper;
+        private readonly StnkHelper _helper = helper;
 
         public async Task<IEnumerable<Stnk>> GetAllStnkAsync()
         {
@@ -19,10 +24,29 @@ namespace Backend.Repositories
         {
             return await _dbContext.CarType.ToListAsync();
         }
-
+        
         public async Task<IEnumerable<EngineSize>> GetEngineSizeAsync()
         {
             return await _dbContext.EngineSize.ToListAsync();
+        }
+
+        public async Task<CarType> GetCarTypeAsync(int id)
+        {
+            return await _dbContext.CarType.FindAsync(id) ?? throw new Exception("Car type didn't exists!");
+        }
+
+        public async Task<EngineSize> GetEngineSizeAsync(int id)
+        {
+            return await _dbContext.EngineSize.FindAsync(id) ?? throw new Exception("Engine size didnt't exists!");
+        }
+
+        public async Task<int> GetCurrentCarNumber(int ownerId, string registrationNumber)
+        {
+            var carList = await _dbContext.Stnk
+                .Where(x => x.OwnerId == ownerId)
+                .ToListAsync();
+
+            return carList.FindIndex(x => x.RegistrationNumber == registrationNumber) + 1;
         }
 
         public async Task<int> GetOwnerIdAsync(string name)
@@ -59,15 +83,26 @@ namespace Backend.Repositories
                 .SingleAsync();
         }
 
-        public int InsertOwner(string name, string sequence)
+        public async Task<int> InsertOwner(string name, string sequence)
         {
             var owner = new Owner { Name = name, NIK = sequence };
             _dbContext.Owner.Add(owner);
+            await SaveChangesAsync();
             return owner.Id;
         }
 
-        public void InsertStnk(Stnk stnk)
+        public async Task InsertStnk(StnkInsertReadDto stnkInput, string registrationNumber, int ownerId, dynamic taxPercentage)
         {
+            var currentCarNumber = await GetCurrentCarNumber(ownerId, registrationNumber);
+
+            var dto = _mapper.Map<StnkInsertWriteDto>(stnkInput);
+            dto.RegistrationNumber = registrationNumber;
+            dto.OwnerId = ownerId;
+            dto.LastTaxPrice = _helper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
+            dto.AddedBy = "";
+            dto.AddedDate = DateOnly.FromDateTime(DateTime.Now);
+
+            var stnk = _mapper.Map<Stnk>(dto);
             _dbContext.Add(stnk);
         }
 
@@ -94,6 +129,24 @@ namespace Backend.Repositories
         public async Task SaveChangesAsync()
         {
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<Stnk> UpdateStnkAsync(StnkUpdateWriteDto stnkInput, string registrationNumber, dynamic taxPercentage)
+        {
+            var stnk = await _dbContext.Stnk
+                .Where(x => x.RegistrationNumber == registrationNumber)
+                .SingleAsync();
+
+            var currentCarNumber = await GetCurrentCarNumber(stnk.OwnerId, registrationNumber);
+
+            stnk.LastTaxPrice = _helper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
+            stnk.ModifiedBy = "";
+            stnk.ModifiedDate = DateOnly.FromDateTime(DateTime.Now);
+
+            _mapper.Map(stnkInput, stnk);
+            await SaveChangesAsync();
+
+            return stnk;
         }
     }
 }
