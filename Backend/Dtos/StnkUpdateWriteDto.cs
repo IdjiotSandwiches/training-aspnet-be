@@ -8,7 +8,7 @@ namespace Backend.Dtos
         public int CarType { get; set; }
 
         [Required]
-        public required string CarName { get; set; }
+        public string CarName { get; set; } = string.Empty;
 
         [Required]
         public int EngineSize { get; set; }

@@ -9,9 +9,9 @@ namespace Backend.Models
         public int Id { get; set; }
 
         [Required]
-        public required string NIK { get; set; }
+        public string NIK { get; set; } = string.Empty;
 
         [Required]
-        public required string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

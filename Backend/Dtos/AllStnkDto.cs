@@ -1,11 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Backend.Dtos
+﻿namespace Backend.Dtos
 {
     public class AllStnkDto
     {
-        public required string RegistrationNumber { get; set; }
-        public required string CarName { get; set; }
+        public string RegistrationNumber { get; set; } = string.Empty;
+        public string CarName { get; set; } = string.Empty;
         public decimal LastTaxPrice { get; set; }
     }
 }

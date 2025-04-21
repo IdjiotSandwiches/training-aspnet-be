@@ -1,8 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Cors;
+﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Backend.Dtos;
-using Backend.Services;
 using Backend.Services.Interfaces;
 
 namespace Backend.Controllers
