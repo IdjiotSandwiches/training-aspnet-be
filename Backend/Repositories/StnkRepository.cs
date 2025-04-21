@@ -9,11 +9,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Repositories
 {
-    public class StnkRepository(AppDbContext dbContext, IMapper mapper, StnkHelper helper) : IStnkRepository
+    public class StnkRepository(AppDbContext dbContext, IMapper mapper) : IStnkRepository
     {
         private readonly AppDbContext _dbContext = dbContext;
         private readonly IMapper _mapper = mapper;
-        private readonly StnkHelper _helper = helper;
 
         public async Task<IEnumerable<Stnk>> GetAllStnkAsync()
         {
@@ -98,7 +97,7 @@ namespace Backend.Repositories
             var dto = _mapper.Map<StnkInsertWriteDto>(stnkInput);
             dto.RegistrationNumber = registrationNumber;
             dto.OwnerId = ownerId;
-            dto.LastTaxPrice = _helper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
+            dto.LastTaxPrice = StnkHelper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
             dto.AddedBy = "";
             dto.AddedDate = DateOnly.FromDateTime(DateTime.Now);
 
@@ -139,7 +138,7 @@ namespace Backend.Repositories
 
             var currentCarNumber = await GetCurrentCarNumber(stnk.OwnerId, registrationNumber);
 
-            stnk.LastTaxPrice = _helper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
+            stnk.LastTaxPrice = StnkHelper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
             stnk.ModifiedBy = "";
             stnk.ModifiedDate = DateOnly.FromDateTime(DateTime.Now);
 

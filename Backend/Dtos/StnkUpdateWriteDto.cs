@@ -15,8 +15,5 @@ namespace Backend.Dtos
 
         [Required]
         public decimal CarPrice { get; set; }
-
-        [Required]
-        public decimal LastTaxPrice { get; set; }
     }
 }

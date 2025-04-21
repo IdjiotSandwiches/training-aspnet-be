@@ -9,14 +9,13 @@ using Backend.Services.Interfaces;
 
 namespace Backend.Services
 {
-    public class StnkService(AppDbContext dbContext, IStnkRepository repo, IMapper mapper, ILogger<StnkService> logger, ISequenceService sequenceService, StnkHelper helper) : IStnkService
+    public class StnkService(AppDbContext dbContext, IStnkRepository repo, IMapper mapper, ILogger<StnkService> logger, ISequenceService sequenceService) : IStnkService
     {
         private readonly AppDbContext _dbContext = dbContext;
         private readonly IStnkRepository _repo = repo;
         private readonly IMapper _mapper = mapper;
         private readonly ILogger<StnkService> _logger = logger;
         private readonly ISequenceService _sequenceService = sequenceService;
-        private readonly StnkHelper _helper = helper;
 
         public async Task<Result<InitDto>> Init()
         {
@@ -75,10 +74,7 @@ namespace Backend.Services
                 {
                     var nikSequence = await _sequenceService.GenerateSequence(SequenceTypeEnum.NIK, transaction);
                     if (!nikSequence.IsSuccess)
-                    {
-                        await transaction.RollbackAsync();
-                        return Result<StnkInsertReadDto>.Error(nikSequence.Status, nikSequence.Message);
-                    }
+                        return await StnkHelper.RollbackWithError<StnkInsertReadDto>(transaction, Result<StnkInsertReadDto>.Error(nikSequence.Status, nikSequence.Message));
 
                     ownerId = await _repo.InsertOwner(stnkInput.OwnerName, nikSequence.Data!);
                 }
@@ -119,7 +115,7 @@ namespace Backend.Services
             try
             {
                 if (await _repo.IsStnkEmptyAsync(registrationNumber))
-                    return Result<StnkUpdateReadDto>.Error(404, "STNK not found!");
+                    return await StnkHelper.RollbackWithError<StnkUpdateReadDto>(transaction, Result<StnkUpdateReadDto>.Error(404, "STNK not found!"));
 
                 var stnk = await _repo.UpdateStnkAsync(stnkInput, registrationNumber, taxPercentage);
                 
@@ -147,7 +143,7 @@ namespace Backend.Services
             var owner = await _repo.GetOwnerIdAsync(ownerName);
             var currentCarNumber = await _repo.GetCurrentCarNumber(owner, registrationNumber);
 
-            var tax = _helper.CalculateTax(carPrice, carType.Percentage, engineSize.Percentage, currentCarNumber);
+            var tax = StnkHelper.CalculateTax(carPrice, carType.Percentage, engineSize.Percentage, currentCarNumber);
 
             return Result<decimal>.Success(200, "OK", tax);
         }

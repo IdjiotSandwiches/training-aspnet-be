@@ -40,9 +40,6 @@ builder.Services.AddScoped<ISequenceRepository, SequenceRepository>();
 builder.Services.AddScoped<IStnkService, StnkService>();
 builder.Services.AddScoped<ISequenceService, SequenceService>();
 
-// Helpers
-builder.Services.AddScoped<StnkHelper>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
