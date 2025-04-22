@@ -7,7 +7,7 @@ namespace Backend.Helpers
     {
         public static decimal CalculateTax(decimal carPrice, int carTypeTax, int engineSizeTax, int progresiveTax)
         {
-            return (carPrice * carTypeTax / 100) + (carPrice * engineSizeTax / 100) + (carPrice * progresiveTax * 0.5m);
+            return (carPrice * carTypeTax / 100) + (carPrice * engineSizeTax / 100) + (carPrice * progresiveTax * 0.05m);
         }
 
         public static async Task<Result<T>> RollbackWithError<T>(IDbContextTransaction transaction, Result<T> sequenceResult)

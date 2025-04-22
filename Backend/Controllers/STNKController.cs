@@ -135,7 +135,7 @@ namespace Backend.Controllers
         }
 
         [HttpGet("calculate-tax")]
-        public async Task<ActionResult<ApiResponseDto<decimal>>> CalculateTax(int carType, int engineSize, decimal carPrice, string ownerName, string registrationNumber)
+        public async Task<ActionResult<ApiResponseDto<decimal>>> CalculateTax(int carType, int engineSize, decimal carPrice, string ownerName, string registrationNumber = "")
         {
             var tax = await _stnkService.CalculateTax(carType, engineSize, carPrice, ownerName, registrationNumber);
             if (!tax.IsSuccess)
