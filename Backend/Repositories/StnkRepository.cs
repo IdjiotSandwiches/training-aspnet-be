@@ -44,7 +44,9 @@ namespace Backend.Repositories
                 .Where(x => x.OwnerId == ownerId)
                 .ToListAsync();
 
-            return carList.FindIndex(x => x.RegistrationNumber == registrationNumber) + 1;
+            Console.WriteLine(registrationNumber);
+
+            return registrationNumber == "" ? carList.Count : carList.FindIndex(x => x.RegistrationNumber == registrationNumber) + 1;
         }
 
         public async Task<int> GetOwnerIdAsync(string name)
@@ -76,7 +78,7 @@ namespace Backend.Repositories
                     CarPrice = x.stnk.CarPrice,
                     LastTaxPrice = x.stnk.LastTaxPrice,
                     OwnerName = x.owner.Name,
-                    OwnerNIK = x.owner.NIK
+                    OwnerNik = x.owner.NIK
                 })
                 .SingleAsync();
         }
@@ -91,7 +93,7 @@ namespace Backend.Repositories
 
         public async Task InsertStnk(StnkInsertReadDto stnkInput, string registrationNumber, int ownerId, dynamic taxPercentage)
         {
-            var currentCarNumber = await GetCurrentCarNumber(ownerId, registrationNumber);
+            var currentCarNumber = await GetCurrentCarNumber(ownerId, "");
 
             var dto = _mapper.Map<StnkInsertWriteDto>(stnkInput);
             dto.RegistrationNumber = registrationNumber;
