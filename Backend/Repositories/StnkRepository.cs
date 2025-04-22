@@ -44,9 +44,7 @@ namespace Backend.Repositories
                 .Where(x => x.OwnerId == ownerId)
                 .ToListAsync();
 
-            Console.WriteLine(registrationNumber);
-
-            return registrationNumber == "" ? carList.Count : carList.FindIndex(x => x.RegistrationNumber == registrationNumber) + 1;
+            return registrationNumber == "" ? carList.Count + 1 : carList.FindIndex(x => x.RegistrationNumber == registrationNumber) + 1;
         }
 
         public async Task<int> GetOwnerIdAsync(string name)
@@ -94,6 +92,7 @@ namespace Backend.Repositories
         public async Task InsertStnk(StnkInsertReadDto stnkInput, string registrationNumber, int ownerId, dynamic taxPercentage)
         {
             var currentCarNumber = await GetCurrentCarNumber(ownerId, "");
+            Console.WriteLine(currentCarNumber);
 
             var dto = _mapper.Map<StnkInsertWriteDto>(stnkInput);
             dto.RegistrationNumber = registrationNumber;
@@ -138,6 +137,7 @@ namespace Backend.Repositories
                 .SingleAsync();
 
             var currentCarNumber = await GetCurrentCarNumber(stnk.OwnerId, registrationNumber);
+            Console.WriteLine(currentCarNumber);
 
             stnk.LastTaxPrice = StnkHelper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
             stnk.ModifiedBy = "";
