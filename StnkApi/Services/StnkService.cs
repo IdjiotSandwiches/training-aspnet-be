@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore.Metadata;
 using SharedLibrary.Enums;
 using StnkApi.ApiClients.Interfaces;
-using StnkApi.Common;
 using StnkApi.Data;
 using StnkApi.Dtos;
 using StnkApi.Helpers;
@@ -35,7 +33,7 @@ namespace StnkApi.Services
 
         public async Task<StnkUpdateReadDto?> GetStnk(string registrationNumber)
         {
-            var stnk = await _repo.GetStnkAsync(registrationNumber);
+            var stnk = await _repo.GetStnkFullAsync(registrationNumber);
             return stnk;
         }
 
@@ -56,13 +54,7 @@ namespace StnkApi.Services
             var engineSize = await _repo.GetEngineSizeAsync(stnkInput.EngineSize);
 
             if (carType == null || engineSize == null)
-                throw new NullReferenceException("");
-
-            var taxPercentage = new
-            {
-                CarTypeTax = carType.Percentage,
-                EngineSizeTax = engineSize.Percentage
-            };
+                throw new NullReferenceException("Car Type or Engine Size not match!");
 
             var registrationNumber = await GetSequence(SequenceTypeEnum.STNK) ?? throw new InvalidOperationException("Failed to retrieve Registration Number!");
 
@@ -80,73 +72,61 @@ namespace StnkApi.Services
 
             try
             {
-                await _repo.InsertStnk(stnkInput, registrationNumber, ownerId, taxPercentage);
+                var tax = await CalculateTax(carType.Id, engineSize.Id, stnkInput.CarPrice, stnkInput.OwnerName);
+                await _repo.InsertStnk(stnkInput, registrationNumber, ownerId, tax);
                 await _repo.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Error while inserting STNK");
                 throw new Exception(ex.Message);
             }
         }
 
-        //public async Task<Result<StnkUpdateReadDto>> UpdateStnk(string registrationNumber, StnkUpdateWriteDto stnkInput)
-        //{
-        //    var carType = await _repo.GetCarTypeAsync(stnkInput.CarType);
-        //    var engineSize = await _repo.GetEngineSizeAsync(stnkInput.EngineSize);
+        public async Task<StnkUpdateReadDto> UpdateStnk(string registrationNumber, StnkUpdateWriteDto stnkInput)
+        {
+            var carType = await _repo.GetCarTypeAsync(stnkInput.CarType);
+            var engineSize = await _repo.GetEngineSizeAsync(stnkInput.EngineSize);
 
-        //    if (carType == null || engineSize == null)
-        //        return Result<StnkUpdateReadDto>.Error(400, "Invalid operation!");
+            if (carType == null || engineSize == null)
+                throw new NullReferenceException("Car Type or Engine Size not match!");
 
-        //    var taxPercentage = new
-        //    {
-        //        CarTypeTax = carType.Percentage,
-        //        EngineSizeTax = engineSize.Percentage
-        //    };
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
-        //    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                var stnk = await _repo.GetStnkAsync(registrationNumber) ?? throw new NullReferenceException("STNK not found!");
+                var owner = await _repo.GetOwnerAsync(stnk.OwnerId) ?? throw new NullReferenceException("Owner not found!");
+                var tax = await CalculateTax(carType.Id, engineSize.Id, stnkInput.CarPrice, owner.Name, registrationNumber);
+                var updateStnk = await _repo.UpdateStnkAsync(stnkInput, stnk, tax);
 
-        //    try
-        //    {
-        //        if (await _repo.IsStnkEmptyAsync(registrationNumber))
-        //            return await StnkHelper.RollbackWithError<StnkUpdateReadDto>(transaction, Result<StnkUpdateReadDto>.Error(404, "STNK not found!"));
+                await _repo.SaveChangesAsync();
+                await transaction.CommitAsync();
 
-        //        var stnk = await _repo.UpdateStnkAsync(stnkInput, registrationNumber, taxPercentage);
+                return _mapper.Map<StnkUpdateReadDto>(stnk);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception(ex.Message);
+            }
+        }
 
-        //        await _repo.SaveChangesAsync();
-        //        await transaction.CommitAsync();
-
-        //        return Result<StnkUpdateReadDto>.Success(200, "OK", _mapper.Map<StnkUpdateReadDto>(stnk));
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        await transaction.RollbackAsync();
-        //        _logger.LogError(ex, "Error while updating STNK");
-        //        return Result<StnkUpdateReadDto>.Error(500, "Fail updating STNK!");
-        //    }
-        //}
-
-        public async Task<Result<decimal>> CalculateTax(int carTypeId, int engineSizeId, decimal carPrice, string ownerName, string registrationNumber)
+        public async Task<decimal> CalculateTax(int carTypeId, int engineSizeId, decimal carPrice, string ownerName, string registrationNumber = "")
         {
             var carType = await _repo.GetCarTypeAsync(carTypeId);
             var engineSize = await _repo.GetEngineSizeAsync(engineSizeId);
 
             if (carType == null || engineSize == null)
-                return Result<decimal>.Error(400, "");
+                throw new NullReferenceException("Car Type or Engine Size not match!");
 
             var owner = await _repo.GetOwnerIdAsync(ownerName);
             var currentCarNumber = await _repo.GetCurrentCarNumber(owner, registrationNumber);
 
             var tax = StnkHelper.CalculateTax(carPrice, carType.Percentage, engineSize.Percentage, currentCarNumber);
 
-            return Result<decimal>.Success(200, "OK", tax);
-        }
-
-        public Task<Result<StnkUpdateReadDto>> UpdateStnk(string registrationNumber, StnkUpdateWriteDto stnk)
-        {
-            throw new NotImplementedException();
+            return tax;
         }
     }
 }

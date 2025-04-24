@@ -10,12 +10,14 @@ namespace StnkApi.Repositories.Interfaces
         Task<IEnumerable<Stnk>> GetStnksAsync();
         Task<CarType?> GetCarTypeAsync(int id);
         Task<EngineSize?> GetEngineSizeAsync(int id);
-        Task<StnkUpdateReadDto?> GetStnkAsync(string registrationNumber);
+        Task<StnkUpdateReadDto?> GetStnkFullAsync(string registrationNumber);
+        Task<Stnk?> GetStnkAsync(string registrationNumber);
         Task<int> GetOwnerIdAsync(string name);
+        Task<Owner?> GetOwnerAsync(int id);
         Task<int> GetCurrentCarNumber(int ownerId, string registrationNumber);
-        Task InsertStnk(StnkInsertReadDto stnk, string registrationNumber, int ownerId, dynamic taxPercentage);
+        Task InsertStnk(StnkInsertReadDto stnk, string registrationNumber, int ownerId, decimal tax);
         Task<int> InsertOwner(string name, string sequence);
-        Task<Stnk> UpdateStnkAsync(StnkUpdateWriteDto stnkInput, string registrationNumber, dynamic taxPercentage);
+        Task<Stnk> UpdateStnkAsync(StnkUpdateWriteDto stnkInput, Stnk stnk, decimal tax);
         Task SaveChangesAsync();
     }
 }

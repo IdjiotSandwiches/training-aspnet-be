@@ -148,52 +148,71 @@ namespace StnkApi.Controllers
         }
 
         [HttpPut]
-        public IActionResult UpdateStnk(string registrationNumber, [FromBody] StnkUpdateWriteDto stnk)
+        public async Task<IActionResult> UpdateStnk(string registrationNumber, [FromBody] StnkUpdateWriteDto stnk)
         {
-            //if (!ModelState.IsValid || registrationNumber == null) return BadRequest(new ApiResponseDto<StnkUpdateReadDto>
-            //{
-            //    Status = StatusCodes.Status400BadRequest,
-            //    Message = "Invalid input!",
-            //    Data = null
-            //});
+            if (!ModelState.IsValid || registrationNumber == null)
+            {
+                var errorMessages = string.Join(", ", ModelState
+                    .Where(x => x.Value?.Errors?.Count > 0)
+                    .SelectMany(x => x.Value.Errors.Select(e => $"{x.Key}: {e.ErrorMessage}"))
+                    .ToList());
 
-            //var updateStnk = await _stnkService.UpdateStnk(registrationNumber, stnk);
-            //if (!updateStnk.IsSuccess)
-            //    return StatusCode(updateStnk.Status, new ApiResponseDto<StnkUpdateReadDto>
-            //    {
-            //        Status = updateStnk.Status,
-            //        Message = updateStnk.Message,
-            //        Data = null
-            //    });
+                return BadRequest(
+                    ErrorResponseHelper.ErrorResponse(
+                        StatusCodes.Status400BadRequest,
+                        "Invalid input!",
+                        errorMessages
+                    )
+                );
+            }
 
-            //return Ok(new ApiResponseDto<StnkUpdateReadDto>
-            //{
-            //    Status = updateStnk.Status,
-            //    Message = updateStnk.Message,
-            //    Data = updateStnk.Data
-            //});
-
-            return Ok();
+            try
+            {
+                var updateStnk = await _stnkService.UpdateStnk(registrationNumber, stnk);
+                return Ok(new ApiResponseDto<object>
+                {
+                    Status = 200,
+                    Message = "OK",
+                    Data = updateStnk
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ErrorResponseHelper.ErrorResponse(
+                        StatusCodes.Status500InternalServerError,
+                        "Internal Server Error",
+                        ex.Message
+                    )
+                );
+            }
         }
 
         [HttpGet("calculate-tax")]
         public async Task<IActionResult> CalculateTax(int carType, int engineSize, decimal carPrice, string ownerName, string registrationNumber = "")
         {
-            var tax = await _stnkService.CalculateTax(carType, engineSize, carPrice, ownerName, registrationNumber);
-            if (!tax.IsSuccess)
-                return StatusCode(tax.Status, new ApiResponseDto<decimal>
-                {
-                    Status = tax.Status,
-                    Message = tax.Message,
-                    Data = 0
-                });
-
-            return Ok(new ApiResponseDto<decimal>
+            try
             {
-                Status = tax.Status,
-                Message = tax.Message,
-                Data = tax.Data
-            });
+                var tax = await _stnkService.CalculateTax(carType, engineSize, carPrice, ownerName, registrationNumber);
+                return Ok(new ApiResponseDto<object>
+                {
+                    Status = 200,
+                    Message = "OK",
+                    Data = tax
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    ErrorResponseHelper.ErrorResponse(
+                        StatusCodes.Status500InternalServerError,
+                        "Internal Server Error",
+                        ex.Message
+                    )
+                );
+            }
         }
     }
 }

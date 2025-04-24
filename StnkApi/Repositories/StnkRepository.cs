@@ -55,7 +55,7 @@ namespace StnkApi.Repositories
                 .SingleOrDefaultAsync();
         }
 
-        public async Task<StnkUpdateReadDto?> GetStnkAsync(string registrationNumber)
+        public async Task<StnkUpdateReadDto?> GetStnkFullAsync(string registrationNumber)
         {
             return await _dbContext.Stnk
                 .Join(_dbContext.Owner,
@@ -81,6 +81,13 @@ namespace StnkApi.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Stnk?> GetStnkAsync(string registrationNumber)
+        {
+            return await _dbContext.Stnk
+                .Where(x => x.RegistrationNumber == registrationNumber)
+                .SingleOrDefaultAsync();
+        }
+
         public async Task<int> InsertOwner(string name, string sequence)
         {
             var owner = new Owner { Name = name, NIK = sequence };
@@ -89,31 +96,23 @@ namespace StnkApi.Repositories
             return owner.Id;
         }
 
-        public async Task InsertStnk(StnkInsertReadDto stnkInput, string registrationNumber, int ownerId, dynamic taxPercentage)
+        public async Task InsertStnk(StnkInsertReadDto stnkInput, string registrationNumber, int ownerId, decimal tax)
         {
-            var currentCarNumber = await GetCurrentCarNumber(ownerId, "");
-
             var dto = _mapper.Map<StnkInsertWriteDto>(stnkInput);
             dto.RegistrationNumber = registrationNumber;
             dto.OwnerId = ownerId;
-            dto.LastTaxPrice = StnkHelper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
+            dto.LastTaxPrice = tax;
             dto.AddedBy = "";
             dto.AddedDate = DateOnly.FromDateTime(DateTime.Now);
 
             var stnk = _mapper.Map<Stnk>(dto);
             _dbContext.Add(stnk);
+            await SaveChangesAsync();
         }
 
-        public async Task<Stnk> UpdateStnkAsync(StnkUpdateWriteDto stnkInput, string registrationNumber, dynamic taxPercentage)
+        public async Task<Stnk> UpdateStnkAsync(StnkUpdateWriteDto stnkInput, Stnk stnk, decimal tax)
         {
-            var stnk = await _dbContext.Stnk
-                .Where(x => x.RegistrationNumber == registrationNumber)
-                .SingleAsync();
-
-            var currentCarNumber = await GetCurrentCarNumber(stnk.OwnerId, registrationNumber);
-            Console.WriteLine(currentCarNumber);
-
-            stnk.LastTaxPrice = StnkHelper.CalculateTax(stnkInput.CarPrice, taxPercentage.CarTypeTax, taxPercentage.EngineSizeTax, currentCarNumber);
+            stnk.LastTaxPrice = tax;
             stnk.ModifiedBy = "";
             stnk.ModifiedDate = DateOnly.FromDateTime(DateTime.Now);
 
@@ -126,6 +125,11 @@ namespace StnkApi.Repositories
         public async Task SaveChangesAsync()
         {
             await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<Owner?> GetOwnerAsync(int id)
+        {
+            return await _dbContext.Owner.FindAsync(id);
         }
     }
 }

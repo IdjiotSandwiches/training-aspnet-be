@@ -10,8 +10,8 @@ namespace StnkApi.Services.Interfaces
         Task<IEnumerable<AllStnkDto>> GetStnks();
         Task<StnkUpdateReadDto?> GetStnk(string registrationNumber);
         Task InsertStnk(StnkInsertReadDto stnk);
-        Task<Result<StnkUpdateReadDto>> UpdateStnk(string registrationNumber, StnkUpdateWriteDto stnk);
-        Task<Result<decimal>> CalculateTax(int carTypeId, int engineSizeId, decimal carPrice, string ownerName, string registrationNumber);
+        Task<StnkUpdateReadDto> UpdateStnk(string registrationNumber, StnkUpdateWriteDto stnk);
+        Task<decimal> CalculateTax(int carTypeId, int engineSizeId, decimal carPrice, string ownerName, string registrationNumber = "");
         Task<string?> GetSequence(SequenceTypeEnum type);
     }
 }
