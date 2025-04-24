@@ -6,7 +6,6 @@
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?
 .vs/*
 
@@ -57,5 +56,5 @@ TestResult.xml
 nunit-*.xml
 
 # API
-Backend/appsettings.json
-Backend/appsettings.Development.json
+**/appsettings*.json
+
