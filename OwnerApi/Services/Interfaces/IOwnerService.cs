@@ -6,6 +6,6 @@ namespace OwnerApi.Services.Interfaces
     {
         Task<OwnerReadDto?> GetOwner(int id);
         Task<int> GetOwnerId(string name);
-        Task InsertOwner(OwnerWriteDto owner);
+        Task<int> InsertOwner(OwnerWriteDto owner);
     }
 }

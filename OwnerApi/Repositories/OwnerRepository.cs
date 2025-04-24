@@ -24,15 +24,18 @@ namespace OwnerApi.Repositories
                 .SingleOrDefaultAsync();
         }
 
-        public async Task InsertOwnerAsync(string name, string sequence)
+        public async Task<int> InsertOwnerAsync(string name, string sequence)
         {
-            _dbContext.Owner.Add(new Owner
+            var owner = new Owner
             {
                 Name = name,
                 Nik = sequence
-            });
+            };
+
+            _dbContext.Owner.Add(owner);
 
             await SaveChangesAsync();
+            return owner.Id;
         }
 
         public async Task SaveChangesAsync()

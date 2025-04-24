@@ -72,12 +72,12 @@ namespace OwnerApi.Controllers
         {
             try
             {
-                await _ownerService.InsertOwner(owner);
-                return Ok(new ApiResponseDto<OwnerReadDto>
+                var ownerId = await _ownerService.InsertOwner(owner);
+                return Ok(new ApiResponseDto<int>
                 {
                     Status = StatusCodes.Status200OK,
                     Message = "OK",
-                    Data = null
+                    Data = ownerId
                 });
             }
             catch (InvalidOperationException ex)

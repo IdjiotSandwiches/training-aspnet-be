@@ -26,7 +26,7 @@ namespace OwnerApi.Services
             return await _repo.GetOwnerIdAsync(name);
         }
 
-        public async Task InsertOwner(OwnerWriteDto owner)
+        public async Task<int> InsertOwner(OwnerWriteDto owner)
         {
             if (await GetOwnerId(owner.Name) != 0) throw new InvalidOperationException("Owner already exists!");
 
@@ -36,9 +36,10 @@ namespace OwnerApi.Services
 
             try
             {
-                await _repo.InsertOwnerAsync(owner.Name, sequence);
+                var ownerId = await _repo.InsertOwnerAsync(owner.Name, sequence);
                 await _repo.SaveChangesAsync();
                 await transacton.CommitAsync();
+                return ownerId;
             }
             catch (Exception ex)
             {

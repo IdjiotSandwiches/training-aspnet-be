@@ -6,7 +6,7 @@ namespace OwnerApi.Repositories.Interfaces
     {
         Task<Owner?> GetOwnerAsync(int id);
         Task<int> GetOwnerIdAsync(string name);
-        Task InsertOwnerAsync(string name, string sequence);
+        Task<int> InsertOwnerAsync(string name, string sequence);
         Task SaveChangesAsync();
     }
 }
