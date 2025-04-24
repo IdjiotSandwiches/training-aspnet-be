@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
 using SharedLibrary.Enums;
 using StnkApi.ApiClients.Interfaces;
 using StnkApi.Data;
@@ -30,13 +29,6 @@ namespace StnkApi.Services
         public async Task<IEnumerable<AllStnkDto>> GetStnks()
         {
             return _mapper.Map<IEnumerable<AllStnkDto>>(await _repo.GetStnksAsync());
-        }
-
-        public async Task<int> GetOwnerId(string name)
-        {
-            var ownerId = await _ownerApiClient.GetOwnerId(name);
-            if (ownerId != 0) return ownerId;
-            return await _ownerApiClient.InsertOwner(new OwnerWriteDto{ Name = name });
         }
 
         public async Task InsertStnk(StnkInsertReadDto stnkInput)
@@ -122,6 +114,13 @@ namespace StnkApi.Services
             stnkFull.OwnerName = owner.Name;
 
             return stnkFull;
+        }
+
+        public async Task<int> GetOwnerId(string name)
+        {
+            var ownerId = await _ownerApiClient.GetOwnerId(name);
+            if (ownerId != 0) return ownerId;
+            return await _ownerApiClient.InsertOwner(new OwnerWriteDto { Name = name });
         }
     }
 }
