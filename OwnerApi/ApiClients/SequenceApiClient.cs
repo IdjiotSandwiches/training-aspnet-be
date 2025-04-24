@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
 using SharedLibrary.Dtos;
 using SharedLibrary.Enums;
-using StnkApi.ApiClients.Interfaces;
+using OwnerApi.ApiClients.Interfaces;
 
-namespace StnkApi.ApiClients
+namespace OwnerApi.ApiClients
 {
     public class SequenceApiClient(HttpClient httpClient) : ISequenceApiClient
     {
@@ -13,7 +13,9 @@ namespace StnkApi.ApiClients
         {
             var response = await _httpClient.GetAsync($"api/Sequence?type={(int)type}");
             if (!response.IsSuccessStatusCode)
+            {
                 return null;
+            }
 
             var responseData = await response.Content.ReadAsStringAsync();
             var options = new JsonSerializerOptions

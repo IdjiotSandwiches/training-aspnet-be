@@ -83,13 +83,22 @@ namespace StnkApi.Controllers
             {
                 var stnk = await _stnkService.GetStnk(registrationNumber);
 
-                if (stnk == null) return NoContent();
                 return Ok(new ApiResponseDto<StnkUpdateReadDto>
                 {
                     Status = 200,
                     Message = "OK",
                     Data = stnk
                 });
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound(
+                    ErrorResponseHelper.ErrorResponse(
+                        StatusCodes.Status404NotFound,
+                        "Not Found",
+                        ex.Message
+                    )
+                );
             }
             catch (Exception ex)
             {

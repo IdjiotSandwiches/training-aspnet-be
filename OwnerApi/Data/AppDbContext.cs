@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StnkApi.Models;
+using OwnerApi.Models;
 
-namespace StnkApi.Data
+namespace OwnerApi.Data
 {
     public class AppDbContext : DbContext
     {
@@ -10,8 +10,6 @@ namespace StnkApi.Data
 
         }
 
-        public DbSet<Stnk> Stnk { get; set; }
-        public DbSet<EngineSize> EngineSize { get; set; }
-        public DbSet<CarType> CarType { get; set; }
+        public DbSet<Owner> Owner { get; set; }
     }
 }

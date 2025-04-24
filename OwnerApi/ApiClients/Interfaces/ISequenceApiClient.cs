@@ -1,6 +1,6 @@
 ﻿using SharedLibrary.Enums;
 
-namespace StnkApi.ApiClients.Interfaces
+namespace OwnerApi.ApiClients.Interfaces
 {
     public interface ISequenceApiClient
     {

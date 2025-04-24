@@ -9,12 +9,13 @@ using StnkApi.Services.Interfaces;
 
 namespace StnkApi.Services
 {
-    public class StnkService(AppDbContext dbContext, IStnkRepository repo, IMapper mapper, ISequenceApiClient sequenceApiClient) : IStnkService
+    public class StnkService(AppDbContext dbContext, IStnkRepository repo, IMapper mapper, ISequenceApiClient sequenceApiClient, IOwnerApiClient ownerApiClient) : IStnkService
     {
         private readonly AppDbContext _dbContext = dbContext;
         private readonly IStnkRepository _repo = repo;
         private readonly IMapper _mapper = mapper;
         private readonly ISequenceApiClient _sequenceApiClient = sequenceApiClient;
+        private readonly IOwnerApiClient _ownerApiClient = ownerApiClient;
 
         public async Task<InitDto> Init()
         {
@@ -30,23 +31,6 @@ namespace StnkApi.Services
             return _mapper.Map<IEnumerable<AllStnkDto>>(await _repo.GetStnksAsync());
         }
 
-        public async Task<StnkUpdateReadDto?> GetStnk(string registrationNumber)
-        {
-            var stnk = await _repo.GetStnkFullAsync(registrationNumber);
-            return stnk;
-        }
-
-        public async Task<string?> GetSequence(SequenceTypeEnum type)
-        {
-            var sequence = await _sequenceApiClient.GetSequence(type);
-            if (sequence.Status != 200) return null;
-
-            var registrationNumber = sequence.Data?.ToString();
-            if (string.IsNullOrEmpty(registrationNumber)) return null;
-
-            return registrationNumber;
-        }
-
         public async Task InsertStnk(StnkInsertReadDto stnkInput)
         {
             var carType = await _repo.GetCarTypeAsync(stnkInput.CarType);
@@ -55,17 +39,9 @@ namespace StnkApi.Services
             if (carType == null || engineSize == null)
                 throw new NullReferenceException("Car Type or Engine Size not match!");
 
-            var registrationNumber = await GetSequence(SequenceTypeEnum.STNK) ?? throw new InvalidOperationException("Failed to retrieve Registration Number!");
-
-            var ownerId = await _repo.GetOwnerIdAsync(stnkInput.OwnerName);
-
-            if (ownerId == 0)
-            {
-                var nik = await GetSequence(SequenceTypeEnum.NIK) ?? throw new InvalidOperationException("Failed to retrieve valid NIK!");
-                ownerId = await _repo.InsertOwner(stnkInput.OwnerName, nik);
-            }
-            else
-                ownerId = await _repo.GetOwnerIdAsync(stnkInput.OwnerName);
+            var registrationNumber = await _sequenceApiClient.GetSequence(SequenceTypeEnum.STNK) ?? throw new InvalidOperationException("Failed to retrieve Registration Number!");
+            var ownerId = await GetOwnerId(stnkInput.OwnerName);
+            if (ownerId == 0) throw new InvalidOperationException("Failed to create owner!");
 
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
@@ -91,15 +67,15 @@ namespace StnkApi.Services
             if (carType == null || engineSize == null)
                 throw new NullReferenceException("Car Type or Engine Size not match!");
 
+            var stnk = await _repo.GetStnkAsync(registrationNumber) ?? throw new NullReferenceException("STNK not found!");
+            var owner = await _ownerApiClient.GetOwner(stnk.OwnerId) ?? throw new NullReferenceException("Owner not found!");
+            var tax = await CalculateTax(carType.Id, engineSize.Id, stnkInput.CarPrice, owner.Name, registrationNumber);
+
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var stnk = await _repo.GetStnkAsync(registrationNumber) ?? throw new NullReferenceException("STNK not found!");
-                var owner = await _repo.GetOwnerAsync(stnk.OwnerId) ?? throw new NullReferenceException("Owner not found!");
-                var tax = await CalculateTax(carType.Id, engineSize.Id, stnkInput.CarPrice, owner.Name, registrationNumber);
                 var updateStnk = await _repo.UpdateStnkAsync(stnkInput, stnk, tax);
-
                 await _repo.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -120,12 +96,31 @@ namespace StnkApi.Services
             if (carType == null || engineSize == null)
                 throw new NullReferenceException("Car Type or Engine Size not match!");
 
-            var owner = await _repo.GetOwnerIdAsync(ownerName);
+            var owner = await _ownerApiClient.GetOwnerId(ownerName);
             var currentCarNumber = await _repo.GetCurrentCarNumber(owner, registrationNumber);
 
             var tax = StnkHelper.CalculateTax(carPrice, carType.Percentage, engineSize.Percentage, currentCarNumber);
 
             return tax;
+        }
+
+        public async Task<StnkUpdateReadDto> GetStnk(string registrationNumber)
+        {
+            var stnk = await _repo.GetStnkFullAsync(registrationNumber) ?? throw new NullReferenceException("Stnk not found!");
+            var owner = await _ownerApiClient.GetOwner(stnk.OwnerId) ?? throw new NullReferenceException("Owner not found!");
+
+            var stnkFull = _mapper.Map<StnkUpdateReadDto>(stnk);
+            stnkFull.OwnerNik = owner.Nik;
+            stnkFull.OwnerName = owner.Name;
+
+            return stnkFull;
+        }
+
+        public async Task<int> GetOwnerId(string name)
+        {
+            var ownerId = await _ownerApiClient.GetOwnerId(name);
+            if (ownerId != 0) return ownerId;
+            return await _ownerApiClient.InsertOwner(new OwnerWriteDto { Name = name });
         }
     }
 }

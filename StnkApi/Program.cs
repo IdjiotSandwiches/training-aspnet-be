@@ -44,6 +44,11 @@ builder.Services.AddHttpClient<ISequenceApiClient, SequenceApiClient>(c => {
     c.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
+builder.Services.AddHttpClient<IOwnerApiClient, OwnerApiClient>(c => {
+    c.BaseAddress = new System.Uri("http://localhost:5236/");
+    c.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

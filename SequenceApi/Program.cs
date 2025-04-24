@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("STNK_Database")));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("SequenceDatabase")));
 
 builder.Services.AddScoped<ISequenceService, SequenceService>();
 builder.Services.AddScoped<ISequenceRepository, SequenceRepository>();

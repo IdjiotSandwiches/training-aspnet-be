@@ -46,38 +46,13 @@ namespace StnkApi.Repositories
             return registrationNumber == "" ? carList.Count + 1 : carList.FindIndex(x => x.RegistrationNumber == registrationNumber) + 1;
         }
 
-        public async Task<int> GetOwnerIdAsync(string name)
+        public async Task<Stnk?> GetStnkFullAsync(string registrationNumber)
         {
-            return await _dbContext.Owner
-                .Where(x => x.Name == name)
-                .Select(x => x.Id)
-                .SingleOrDefaultAsync();
-        }
-
-        public async Task<StnkUpdateReadDto?> GetStnkFullAsync(string registrationNumber)
-        {
-            return await _dbContext.Stnk
-                .Join(_dbContext.Owner,
-                    stnk => stnk.OwnerId,
-                    owner => owner.Id,
-                    (stnk, owner) => new
-                    {
-                        stnk,
-                        owner
-                    })
-                .Where(x => x.stnk.RegistrationNumber == registrationNumber)
-                .Select(x => new StnkUpdateReadDto
-                {
-                    RegistrationNumber = x.stnk.RegistrationNumber,
-                    CarName = x.stnk.CarName,
-                    CarType = x.stnk.CarType,
-                    EngineSize = x.stnk.EngineSize,
-                    CarPrice = x.stnk.CarPrice,
-                    LastTaxPrice = x.stnk.LastTaxPrice,
-                    OwnerName = x.owner.Name,
-                    OwnerNik = x.owner.NIK
-                })
+            var stnk = await _dbContext.Stnk
+                .Where(x => x.RegistrationNumber == registrationNumber)
                 .FirstOrDefaultAsync();
+
+            return stnk;
         }
 
         public async Task<Stnk?> GetStnkAsync(string registrationNumber)
@@ -85,14 +60,6 @@ namespace StnkApi.Repositories
             return await _dbContext.Stnk
                 .Where(x => x.RegistrationNumber == registrationNumber)
                 .SingleOrDefaultAsync();
-        }
-
-        public async Task<int> InsertOwner(string name, string sequence)
-        {
-            var owner = new Owner { Name = name, NIK = sequence };
-            _dbContext.Owner.Add(owner);
-            await SaveChangesAsync();
-            return owner.Id;
         }
 
         public async Task InsertStnk(StnkInsertReadDto stnkInput, string registrationNumber, int ownerId, decimal tax)
@@ -124,11 +91,6 @@ namespace StnkApi.Repositories
         public async Task SaveChangesAsync()
         {
             await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task<Owner?> GetOwnerAsync(int id)
-        {
-            return await _dbContext.Owner.FindAsync(id);
         }
     }
 }
