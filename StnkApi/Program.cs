@@ -35,11 +35,9 @@ builder.Services.AddSwaggerGen();
 
 // Repositories
 builder.Services.AddScoped<IStnkRepository, StnkRepository>();
-builder.Services.AddScoped<ISequenceRepository, SequenceRepository>();
 
 // Services
 builder.Services.AddScoped<IStnkService, StnkService>();
-builder.Services.AddScoped<ISequenceService, SequenceService>();
 
 builder.Services.AddHttpClient<ISequenceApiClient, SequenceApiClient>(c => {
     c.BaseAddress = new System.Uri("http://localhost:5235/");

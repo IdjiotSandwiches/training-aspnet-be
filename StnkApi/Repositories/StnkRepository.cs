@@ -3,7 +3,6 @@ using StnkApi.Models;
 using Microsoft.EntityFrameworkCore;
 using StnkApi.Data;
 using StnkApi.Dtos;
-using StnkApi.Helpers;
 using StnkApi.Repositories.Interfaces;
 
 namespace StnkApi.Repositories

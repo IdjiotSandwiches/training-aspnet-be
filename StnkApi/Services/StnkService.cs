@@ -9,12 +9,11 @@ using StnkApi.Services.Interfaces;
 
 namespace StnkApi.Services
 {
-    public class StnkService(AppDbContext dbContext, IStnkRepository repo, IMapper mapper, ILogger<StnkService> logger, ISequenceApiClient sequenceApiClient) : IStnkService
+    public class StnkService(AppDbContext dbContext, IStnkRepository repo, IMapper mapper, ISequenceApiClient sequenceApiClient) : IStnkService
     {
         private readonly AppDbContext _dbContext = dbContext;
         private readonly IStnkRepository _repo = repo;
         private readonly IMapper _mapper = mapper;
-        private readonly ILogger<StnkService> _logger = logger;
         private readonly ISequenceApiClient _sequenceApiClient = sequenceApiClient;
 
         public async Task<InitDto> Init()

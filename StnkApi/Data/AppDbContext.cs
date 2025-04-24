@@ -14,7 +14,5 @@ namespace StnkApi.Data
         public DbSet<Owner> Owner { get; set; }
         public DbSet<EngineSize> EngineSize { get; set; }
         public DbSet<CarType> CarType { get; set; }
-        public DbSet<Sequence> Sequence { get; set; }
-        public DbSet<SequenceType> SequenceType { get; set; }
     }
 }
