@@ -30,7 +30,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("STNK_Database")));
 
-builder.Services.AddScoped<ISequenceService, SeqeunceService>();
+builder.Services.AddScoped<ISequenceService, SequenceService>();
 builder.Services.AddScoped<ISequenceRepository, SequenceRepository>();
 
 var app = builder.Build();

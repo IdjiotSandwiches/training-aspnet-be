@@ -5,7 +5,7 @@ using SharedLibrary.Enums;
 
 namespace SequenceApi.Services
 {
-    public class SeqService(AppDbContext dbContext, ISequenceRepository repo) : ISequenceService
+    public class SequenceService(AppDbContext dbContext, ISequenceRepository repo) : ISequenceService
     {
         private readonly ISequenceRepository _repo = repo;
         private readonly AppDbContext _dbContext = dbContext;
