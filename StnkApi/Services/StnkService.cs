@@ -36,17 +36,6 @@ namespace StnkApi.Services
             return stnk;
         }
 
-        public async Task<string?> GetSequence(SequenceTypeEnum type)
-        {
-            var sequence = await _sequenceApiClient.GetSequence(type);
-            if (sequence.Status != 200) return null;
-
-            var registrationNumber = sequence.Data?.ToString();
-            if (string.IsNullOrEmpty(registrationNumber)) return null;
-
-            return registrationNumber;
-        }
-
         public async Task InsertStnk(StnkInsertReadDto stnkInput)
         {
             var carType = await _repo.GetCarTypeAsync(stnkInput.CarType);
@@ -55,13 +44,13 @@ namespace StnkApi.Services
             if (carType == null || engineSize == null)
                 throw new NullReferenceException("Car Type or Engine Size not match!");
 
-            var registrationNumber = await GetSequence(SequenceTypeEnum.STNK) ?? throw new InvalidOperationException("Failed to retrieve Registration Number!");
+            var registrationNumber = await _sequenceApiClient.GetSequence(SequenceTypeEnum.STNK) ?? throw new InvalidOperationException("Failed to retrieve Registration Number!");
 
             var ownerId = await _repo.GetOwnerIdAsync(stnkInput.OwnerName);
 
             if (ownerId == 0)
             {
-                var nik = await GetSequence(SequenceTypeEnum.NIK) ?? throw new InvalidOperationException("Failed to retrieve valid NIK!");
+                var nik = await _sequenceApiClient.GetSequence(SequenceTypeEnum.NIK) ?? throw new InvalidOperationException("Failed to retrieve valid NIK!");
                 ownerId = await _repo.InsertOwner(stnkInput.OwnerName, nik);
             }
             else

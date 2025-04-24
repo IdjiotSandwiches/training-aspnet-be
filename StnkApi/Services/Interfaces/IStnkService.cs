@@ -1,5 +1,4 @@
-﻿using SharedLibrary.Enums;
-using StnkApi.Dtos;
+﻿using StnkApi.Dtos;
 
 namespace StnkApi.Services.Interfaces
 {
@@ -11,6 +10,5 @@ namespace StnkApi.Services.Interfaces
         Task InsertStnk(StnkInsertReadDto stnk);
         Task<StnkUpdateReadDto> UpdateStnk(string registrationNumber, StnkUpdateWriteDto stnk);
         Task<decimal> CalculateTax(int carTypeId, int engineSizeId, decimal carPrice, string ownerName, string registrationNumber = "");
-        Task<string?> GetSequence(SequenceTypeEnum type);
     }
 }
